@@ -1,0 +1,47 @@
+<html>
+<head>
+
+	<script type="text/javascript" src="jquery-1.8.3.js"></script>
+	<script type="text/javascript" src="templateMap.js"></script>
+	<script type="text/javascript">
+
+		var RootNodes = [];
+		
+		var blockList = {};
+
+		if (!window.map) {
+			alert("Error! \nCannot load template map data from templateMap.js");
+		}
+		else {
+			parseData(window.map);
+		}
+
+		function parseData(map) {
+			for (var pageId in map) {
+
+			}
+		}
+
+
+
+
+
+	</script>
+
+
+
+</head>
+
+<body>
+
+
+	<div class="page">
+		<h3>{{page}}</h3>
+
+
+
+	</div>
+
+
+</body>
+</html>
