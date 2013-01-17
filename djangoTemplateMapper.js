@@ -40,7 +40,7 @@ function processLine(line){
 
 	endPos = line.indexOf(':');
 	filename = line.slice(startpos, endPos);
-	filename.replace(/^.\//, '');
+	filename = filename.replace(/^.\//, '');
 
 	if (!filename) { return };
 	if (!nodeList[filename]) {
@@ -64,10 +64,10 @@ function processLine(line){
 	switch (djangoStatement) {
 		case 'extends':
 			statementVar = statementVar.replace(/['"]/g, '');
-			console.error('parent: ', statementVar);
+			
 			node.parent = statementVar;
 			break;
-		case 'includes':
+		case 'include':
 			statementVar = statementVar.replace(/['"]/g, '');
 			node.includes.push(statementVar);
 			break;

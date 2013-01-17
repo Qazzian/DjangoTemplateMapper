@@ -1,32 +1,204 @@
+<!DOCTYPE html>
 <html>
 <head>
+
+	<style type="text/css">
+		.template {
+			display:none;
+		}
+	</style>
 
 	<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
 	<script type="text/javascript" src="js/underscore.js"></script>
 	<script type="text/javascript" src="js/backbone.js"></script>
+	<script type="text/javascript" src="js/mustache.js"></script>
 	<script type="text/javascript" src="templateMap.js"></script>
 	<script type="text/javascript">
 
-		var RootNodes = [];
+		/* Some Global Vars */
+		var tree, treeView;
 		
-		var blockList = {};
 
-		if (!window.map) {
-			alert("Error! \nCannot load template map data from templateMap.js");
+		var Node = function(data){
+			this.tree = tree;
+			this.isInclude = false; // if true don't include in the root nodes
+			this.isRoot = false; 
+			this.level = 0;
+
+			this.page = data.page;
+			this.parent = undefined; // Node or NodeId, can't decide
+			this.children = []; // Array[Node]
+			this.includes = []; // Array[Node]
+			this.blocks = [];
+
+			this.compiled = false;
+			this.compiledBlocks = {}; // blockName: new CompiledBlock()
+
+			_.extend(this, data);
+
 		}
-		else {
-			parseData(window.map);
-		}
+		Node.prototype = {
+			addChild: function(child) {
+				this.children.push(child);
+			},
 
-		function parseData(map) {
-			for (var pageId in map) {
+			addChild: function(node) {
+					if (!this.children) {
+						this.children = [];
+					}
+					this.children.push(node);
+			},
 
+			compile: function(){
+				if (this.parent) {
+					this.tree.getNode(this.parent).addChild(this);
+				}
+				this.parseIncludes();
+				this.compileBlocks();
+			},
+
+			parseIncludes: function(){
+				var i = 0,
+					l = this.includes.length,
+					nodeId;
+				
+				for (; i<l; i++) {
+					var nodeId = this.includes[i];
+					this.tree.getNode(nodeId).isInclude = true;
+					this.includes[i] = this.tree.getNode(nodeId);
+				}
+
+			},
+
+			
+			/**
+			 * Recurse the template tree to build up a picture of all the blocks this page 
+			 * will include
+			 */
+			compileBlocks: function(){
+				
+				if (this.compiled) {
+					return this.compiledBlocks;
+				}
+
+				if (this.parent !== undefined) {
+					this.compiledBlocks = this.tree.getNode(this.parent).compileBlocks();
+				}
+
+				if (typeof this.compiledBlocks !== 'object') {
+					this.compiledBlocks = {};
+				}
+
+				for (var i=0, l=this.blocks; i<l; i++) {
+					var blockName = this.blocks[i];
+					if (typeof this.compiledBlocks[blockName] === 'undefined') {
+						this.compiledBlocks[blockName] = new CompiledBlock(blockName, this.page, this.page);
+					}
+				}
 			}
 		}
 
+		/**
+		 * name: as defined by the templates
+		 * declaredBy: First template in the tree to declaire the block
+		 * definedBy: The template that finaly defines the content of the block
+		 */
+		var CompiledBlock = function(name, declaredBy, definedBy){
+			this.name = name;
+			this.declaredBy = declaredBy;
+			this.definedBy = definedBy;	
+		}
 
+		var Tree = function(){
+			this.AllNodes = {};
+			this.RootNodes = [];
+		};
 
+		Tree.prototype = {
+			init: function(){
+				if (!window.map) {
+					alert("Error! \nCannot load template map data from templateMap.js");
+					return;
+				}
 
+				this.parseData(window.map);
+			},
+
+			addNode: function(nodeId, data){
+				data = data || {page: nodeId};
+				data.page = data.page || nodeId;
+				this.AllNodes[nodeId] = new Node(data);
+				return this.AllNodes[nodeId];
+			},
+
+			getNode: function(nodeId){
+				if (!this.AllNodes[nodeId]) {
+					this.addNode(nodeId);
+				}
+				return this.AllNodes[nodeId];
+			},
+
+			parseData: function(map) {
+				var node, pageId, parent;
+
+				// First build the child parent relationships
+				_.each(map, function(node, pageId){
+					this.addNode(pageId, node);
+				}, this);
+
+				// get all the nodes to compile tree data about themselves.
+				_.invoke(_.values(this.AllNodes), 'compile');
+
+				// Now Nodes know about thier own context we can build tree level information
+				_.each(this.AllNodes, function(node, pageId){
+					if (typeof node.parent === 'undefined' && node.isInclude === false) {
+							this.RootNodes.push(node);
+						}
+				}, this);
+
+			}
+		};
+		
+
+		var TreeView = function(tree){
+			this.tree = tree;
+			this.rootEl = $('#map');
+			
+			this.helper = $('#mustacheHelper');
+			this.pageTemplate = $('#PageTemplate');
+		}
+
+		TreeView.prototype = {
+			init: function(){
+				this.showRootNodes(this.tree.RootNodes);
+			},
+
+			showRootNodes: function(){
+				var RootNodes = this.tree.RootNodes;
+				for (var i=0, l=RootNodes.length; i<l; i++) {
+					this.addNode(RootNodes[i], 0);
+				}
+			},
+
+			addNode: function(node, parent) {
+				if (!node.domObj) {
+					node.domObj = this.pageTemplate.mustache(node);
+				}
+
+				this.rootEl.append(node.domObj);
+			}
+
+		}
+
+		function init(){
+			tree = new Tree();
+			treeView = new TreeView(tree);
+
+			tree.init();
+			treeView.showRootNodes();
+		}
+
+		$(document).ready(init);
 
 	</script>
 
@@ -36,12 +208,20 @@
 
 <body>
 
+	<h1>Django Template map</h1>
 
-	<div class="page">
-		<h3>{{page}}</h3>
+	<div id="map">
+	</div>
 
-
-
+	<div id="PageTemplate" class="template">
+		<div class="page">
+			<h3>{{page}}</h3>
+			<ul class="">
+				<li class="includes"/>
+				<li class="children"/>
+				<li class="blocks"/>
+			</ul>
+		</div>
 	</div>
 
 
