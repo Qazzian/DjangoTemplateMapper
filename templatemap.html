@@ -7,6 +7,7 @@
 			display:none;
 		}
 	</style>
+	<link rel="stylesheet" href="css/map.css">
 
 	<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
 	<script type="text/javascript" src="js/underscore.js"></script>
@@ -14,15 +15,18 @@
 	<script type="text/javascript" src="js/mustache.js"></script>
 	<script type="text/javascript" src="templateMap.js"></script>
 	<script type="text/javascript">
+		/*global _, $, window, console*/
+
+		//"use strict";
 
 		/* Some Global Vars */
 		var tree, treeView;
 		
 
-		var Node = function(data){
+		var Node = function(data) {
 			this.tree = tree;
 			this.isInclude = false; // if true don't include in the root nodes
-			this.isRoot = false; 
+			this.isRoot = false;
 			this.level = 0;
 
 			this.page = data.page;
@@ -36,20 +40,16 @@
 
 			_.extend(this, data);
 
-		}
+		};
 		Node.prototype = {
-			addChild: function(child) {
-				this.children.push(child);
-			},
-
 			addChild: function(node) {
-					if (!this.children) {
-						this.children = [];
-					}
-					this.children.push(node);
+				if (!this.children) {
+					this.children = [];
+				}
+				this.children.push(node);
 			},
 
-			compile: function(){
+			compile: function() {
 				if (this.parent) {
 					this.tree.getNode(this.parent).addChild(this);
 				}
@@ -57,13 +57,13 @@
 				this.compileBlocks();
 			},
 
-			parseIncludes: function(){
+			parseIncludes: function() {
 				var i = 0,
 					l = this.includes.length,
 					nodeId;
 				
-				for (; i<l; i++) {
-					var nodeId = this.includes[i];
+				for (null; i<l; i++) {
+					nodeId = this.includes[i];
 					this.tree.getNode(nodeId).isInclude = true;
 					this.includes[i] = this.tree.getNode(nodeId);
 				}
@@ -75,7 +75,8 @@
 			 * Recurse the template tree to build up a picture of all the blocks this page 
 			 * will include
 			 */
-			compileBlocks: function(){
+			compileBlocks: function() {
+				var i, l, blockName;
 				
 				if (this.compiled) {
 					return this.compiledBlocks;
@@ -89,33 +90,33 @@
 					this.compiledBlocks = {};
 				}
 
-				for (var i=0, l=this.blocks; i<l; i++) {
-					var blockName = this.blocks[i];
+				for (i=0, l=this.blocks; i<l; i++) {
+					blockName = this.blocks[i];
 					if (typeof this.compiledBlocks[blockName] === 'undefined') {
 						this.compiledBlocks[blockName] = new CompiledBlock(blockName, this.page, this.page);
 					}
 				}
 			}
-		}
+		};
 
 		/**
 		 * name: as defined by the templates
 		 * declaredBy: First template in the tree to declaire the block
 		 * definedBy: The template that finaly defines the content of the block
 		 */
-		var CompiledBlock = function(name, declaredBy, definedBy){
+		var CompiledBlock = function(name, declaredBy, definedBy) {
 			this.name = name;
 			this.declaredBy = declaredBy;
 			this.definedBy = definedBy;	
-		}
+		};
 
-		var Tree = function(){
+		var Tree = function() {
 			this.AllNodes = {};
 			this.RootNodes = [];
 		};
 
 		Tree.prototype = {
-			init: function(){
+			init: function() {
 				if (!window.map) {
 					alert("Error! \nCannot load template map data from templateMap.js");
 					return;
@@ -124,14 +125,14 @@
 				this.parseData(window.map);
 			},
 
-			addNode: function(nodeId, data){
+			addNode: function(nodeId, data) {
 				data = data || {page: nodeId};
 				data.page = data.page || nodeId;
 				this.AllNodes[nodeId] = new Node(data);
 				return this.AllNodes[nodeId];
 			},
 
-			getNode: function(nodeId){
+			getNode: function(nodeId) {
 				if (!this.AllNodes[nodeId]) {
 					this.addNode(nodeId);
 				}
@@ -163,6 +164,7 @@
 		var TreeView = function(tree){
 			this.tree = tree;
 			this.rootEl = $('#map');
+			this.domNodes = {};
 			
 			this.helper = $('#mustacheHelper');
 			this.pageTemplate = $('#PageTemplate');
@@ -173,10 +175,16 @@
 				this.showRootNodes(this.tree.RootNodes);
 			},
 
+			bindEvents: function(){
+				var self = this;
+				$(document).delegate('.pageName', 'click', {self: self}, self.showNode);
+				// TODO finish this
+			},
+
 			showRootNodes: function(){
 				var RootNodes = this.tree.RootNodes;
 				for (var i=0, l=RootNodes.length; i<l; i++) {
-					this.addNode(RootNodes[i], 0);
+					this.addNode(RootNodes[i], this.rootEl);
 				}
 			},
 
@@ -185,7 +193,19 @@
 					node.domObj = this.pageTemplate.mustache(node);
 				}
 
-				this.rootEl.append(node.domObj);
+				parent.append(node.domObj);
+			},
+
+			showNode: function(data) {
+				console.log("Show node: ", data);
+			},
+
+			onPageClick: function() {
+
+			},
+
+			onSectionClick: function() {
+
 			}
 
 		}
@@ -215,11 +235,49 @@
 
 	<div id="PageTemplate" class="template">
 		<div class="page">
-			<h3>{{page}}</h3>
+			<a class="pageName" href="#">{{page}}</a>
 			<ul class="">
-				<li class="includes"/>
-				<li class="children"/>
-				<li class="blocks"/>
+				<!-- Child Nodes -->
+				{{#children.length}}
+				<li class="section children"/>
+					<a class="" href="#">children</a>
+					<ul>
+				{{/children.length}}
+				{{#children}}
+						<li><a class="addNode" href="#">{{page}}</a></li>
+				{{/children}}
+				{{#children.length}}
+					</ul>
+				</li>
+				{{/children.length}}
+
+				<!-- Included Nodes -->
+				{{#includes.length}}
+				<li class="section includes">
+					<a href="#">includes</a>
+					<ul>
+				{{/includes.length}}
+				{{#includes}}
+						<li><a class="addNode" href="#">{{page}}</a></li>
+				{{/includes}}
+				{{#includes.length}}
+						</ul>
+				</li>
+				{{/includes.length}}
+				
+				<!-- Blocks -->
+				{{#blocks.length}}
+				<li class="section blocks">
+					<a href="#">Blocks</a>
+					<ul>
+				{{/blocks.length}}
+				{{#blocks}}
+						<li><a class="addNode" href="#">{{.}}</a></li>
+				{{/blocks}}
+				{{#blocks.length}}
+					</ul>
+				</li>
+				{{/blocks.length}}
 			</ul>
 		</div>
 	</div>
@@ -227,3 +285,33 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

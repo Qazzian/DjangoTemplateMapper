@@ -1,0 +1,24 @@
+.page {
+	border: 1px solid orange;
+	margin: 1em;
+}
+
+.page > a.pageName {
+	display: block;
+	padding: 1ex;
+	background-color: #BDB76B;
+	color: #425226;
+}
+
+.page > ul {
+	list-style: none;
+	padding-left: 1em;
+}
+
+.page ul.closed{
+	height: 0px;
+}
+
+.page ul.open {
+	height: auto;
+}
