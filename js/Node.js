@@ -1,4 +1,4 @@
-var Node = function(data) {
+var Node = function(data, tree) {
 	this.tree = tree;
 	this.isInclude = false; // if true don't include in the root nodes
 	this.isRoot = false;

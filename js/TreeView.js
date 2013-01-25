@@ -1,6 +1,6 @@
 var TreeView = function(tree){
 	this.tree = tree;
-	this.rootEl = $('#map');
+	this.rootEl = $('#mapContainer');
 	this.domNodes = {};
 	
 	this.helper = $('#mustacheHelper');

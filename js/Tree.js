@@ -16,7 +16,7 @@ Tree.prototype = {
 	addNode: function(nodeId, data) {
 		data = data || {page: nodeId};
 		data.page = data.page || nodeId;
-		this.AllNodes[nodeId] = new Node(data);
+		this.AllNodes[nodeId] = new Node(data, this);
 		return this.AllNodes[nodeId];
 	},
 
