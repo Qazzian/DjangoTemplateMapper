@@ -30,7 +30,7 @@
 			treeView = new TreeView(tree);
 
 			tree.init();
-			treeView.showRootNodes();
+			treeView.init();
 		}
 
 		$(document).ready(init);
@@ -45,56 +45,60 @@
 
 	<h1>Django Template map</h1>
 
-	<div id="mapContainer">
-	</div>
+	<ul id="mapContainer">
+	</ul>
 
 	<div id="PageTemplate" class="template">
-		<div class="page">
-			<a class="pageName" href="#">{{page}}</a>
-			<ul class="">
+		<li class="page closed">
+			<a class="pageName showNHide" href="#">{{page}}</a>
+			<ul class="pageContents">
 				<!-- Child Nodes -->
 				{{#children.length}}
-				<li class="section children"/>
-					<a class="" href="#">children</a>
+				<li class="section children closed"/>
+					<a class="showNHide" href="#">children</a>
 					<ul>
-				{{/children.length}}
-				{{#children}}
-						<li><a class="addNode" href="#">{{page}}</a></li>
-				{{/children}}
-				{{#children.length}}
+						{{#children}}
+						<li><a class="addNode" href="#" data-page-id="{{page}}">{{page}}</a></li>
+						{{/children}}
 					</ul>
 				</li>
 				{{/children.length}}
 
 				<!-- Included Nodes -->
 				{{#includes.length}}
-				<li class="section includes">
-					<a href="#">includes</a>
+				<li class="section includes closed">
+					<a class="showNHide" href="#">includes</a>
 					<ul>
-				{{/includes.length}}
-				{{#includes}}
+						{{#includes}}
 						<li><a class="addNode" href="#">{{page}}</a></li>
-				{{/includes}}
-				{{#includes.length}}
+						{{/includes}}
 						</ul>
 				</li>
 				{{/includes.length}}
 				
 				<!-- Blocks -->
 				{{#blocks.length}}
-				<li class="section blocks">
-					<a href="#">Blocks</a>
+				<li class="section blocks closed">
+					<a class="showNHide" href="#">Blocks</a>
 					<ul>
-				{{/blocks.length}}
-				{{#blocks}}
-						<li><a class="addNode" href="#">{{.}}</a></li>
-				{{/blocks}}
-				{{#blocks.length}}
+						{{#blocks}}
+						<li>
+							{{.}}
+							{{#blockDefiniton}}
+								({{blockDefiniton}})
+							{{/blockDefiniton}}
+						</li>
+						{{/blocks}}
 					</ul>
 				</li>
 				{{/blocks.length}}
+
+				<!-- Empty -->
+				{{#empty}}
+					<li>empty</li>
+				{{/empty}}
 			</ul>
-		</div>
+		</li>
 	</div>
 
 

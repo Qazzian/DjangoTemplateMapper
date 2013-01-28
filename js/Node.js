@@ -12,6 +12,7 @@ var Node = function(data, tree) {
 
 	this.compiled = false;
 	this.compiledBlocks = {}; // blockName: new CompiledBlock()
+	this.empty = false;
 
 	_.extend(this, data);
 
@@ -30,6 +31,10 @@ Node.prototype = {
 		}
 		this.parseIncludes();
 		this.compileBlocks();
+
+		if (this.children.length == 0 && this.blocks.length == 0 && this.includes.length == 0) {
+			this.empty = true;
+		}
 	},
 
 	parseIncludes: function() {

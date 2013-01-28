@@ -15,10 +15,7 @@
 	padding-left: 1em;
 }
 
-.page ul.closed{
+.closed > ul{
 	height: 0px;
-}
-
-.page ul.open {
-	height: auto;
+	overflow: hidden;
 }
