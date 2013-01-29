@@ -1,18 +1,27 @@
-.page {
-	border: 1px solid orange;
-	margin: 1em;
+ul {
+	list-style: none;
+	padding-left: 0px;
 }
 
+li > ul {
+	margin-left: 2em;
+}
+
+.page {
+	border: 1px solid #744C02
+	background-color: rgba(190, 125, 10, 0.42);
+}
 .page > a.pageName {
 	display: block;
 	padding: 1ex;
-	background-color: #E7C58A;
 	color: #060709;
 }
 
-.page > ul {
-	list-style: none;
-	padding-left: 1em;
+.page:nth-child(even) {
+	border-color: #034703;
+	background-color: rgba(29, 121, 29, 0.7);
+}
+.page:nth-child(even) > a.pageName{
 }
 
 .closed > ul{

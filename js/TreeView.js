@@ -55,13 +55,11 @@ TreeView.prototype = {
 
 	handleAddNode: function(target, event) {
 		var pageId = target.dataset.pageId,
-			parentNode = target.parentNode,
-			node = this.tree.getNode(pageId);
+			parentNode = $(target.parentNode),
+			node = this.tree.getNode(pageId),
+			domObj = this.pageTemplate.mustache(node);
 
-			//TODO get html 
-			this.addNode(node, $(parentNode));
-
-
+		parentNode.replaceWith(domObj);
 	},
 
 	onPageClick: function() {
