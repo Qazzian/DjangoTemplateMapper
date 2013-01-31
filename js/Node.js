@@ -12,6 +12,7 @@ var Node = function(data, tree) {
 
 	this.compiled = false;
 	this.compiledBlocks = {}; // blockName: new CompiledBlock()
+	this.compiledBlocksList = []; // Only required for the mustache templates
 	this.empty = false;
 
 	_.extend(this, data);
@@ -63,19 +64,52 @@ Node.prototype = {
 		}
 
 		if (this.parent !== undefined) {
-			this.compiledBlocks = this.tree.getNode(this.parent).compileBlocks();
+			this.compiledBlocks = this.tree.getNode(this.parent).cloneBlocks();
+			_.each(this.compiledBlocks, function(block, name){
+				block.definedBySelf = false;
+			});
 		}
 
 		if (typeof this.compiledBlocks !== 'object') {
 			this.compiledBlocks = {};
 		}
 
-		for (i=0, l=this.blocks; i<l; i++) {
+
+
+		for (i=0, l=this.blocks.length; i<l; i++) {
 			blockName = this.blocks[i];
 			if (typeof this.compiledBlocks[blockName] === 'undefined') {
 				this.compiledBlocks[blockName] = new CompiledBlock(blockName, this.page, this.page);
 			}
+			else {
+				this.compiledBlocks[blockName].definedBy = this.page;
+				this.compiledBlocks[blockName].definedBySelf = true;
+			}
 		}
+
+		_.each(this.compiledBlocks, function(block, key){
+			this.compiledBlocksList.push(block);
+		}, this);
+		
+		this.compiledBlocksList.sort(function(a,b){
+			// TODO
+			return a.name.localeCompare(b.name);
+		});
+
+		this.compiled = true;
+		return this.compiledBlocks;
+	},
+
+	cloneBlocks: function(){
+		var clone = {};
+
+		this.compileBlocks();
+
+		_.each(this.compiledBlocks, function(block, name){
+			clone[name] = block.clone();
+		}, this);
+
+		return clone;
 	}
 };
 
@@ -83,9 +117,43 @@ Node.prototype = {
  * name: as defined by the templates
  * declaredBy: First template in the tree to declaire the block
  * definedBy: The template that finaly defines the content of the block
+ * definedBySelf: true if the 
  */
 var CompiledBlock = function(name, declaredBy, definedBy) {
 	this.name = name;
 	this.declaredBy = declaredBy;
 	this.definedBy = definedBy;	
+	this.definedBySelf = true;
 };
+
+CompiledBlock.prototype = {
+	clone: function(){
+		return _.clone(this);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -49,7 +49,7 @@
 	</ul>
 
 	<div id="PageTemplate" class="template">
-		<li class="page closed">
+		<li class="page">
 			<a class="pageName showNHide" href="#">{{page}}</a>
 			<ul class="pageContents">
 				<!-- Child Nodes -->
@@ -58,7 +58,7 @@
 					<a class="showNHide" href="#">children</a>
 					<ul>
 						{{#children}}
-						<li><a class="addNode" href="#" data-page-id="{{page}}">{{page}}</a></li>
+						<li class="page"><a class="addNode pageName" href="#" data-page-id="{{page}}">{{page}}</a></li>
 						{{/children}}
 					</ul>
 				</li>
@@ -70,7 +70,7 @@
 					<a class="showNHide" href="#">includes</a>
 					<ul>
 						{{#includes}}
-						<li><a class="addNode" href="#" data-page-id="{{page}}">{{page}}</a></li>
+						<li class="page"><a class="addNode pageName" href="#" data-page-id="{{page}}">{{page}}</a></li>
 						{{/includes}}
 						</ul>
 				</li>
@@ -81,14 +81,11 @@
 				<li class="section blocks closed">
 					<a class="showNHide" href="#">Blocks</a>
 					<ul>
-						{{#blocks}}
+						{{#compiledBlocksList}}
 						<li>
-							{{.}}
-							{{#blockDefiniton}}
-								({{blockDefiniton}})
-							{{/blockDefiniton}}
+							{{name}} {{^definedBySelf}} ({{ definedBy }}) {{/definedBySelf}}
 						</li>
-						{{/blocks}}
+						{{/compiledBlocksList}}
 					</ul>
 				</li>
 				{{/blocks.length}}

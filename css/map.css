@@ -7,11 +7,19 @@ li > ul {
 	margin-left: 2em;
 }
 
+#mapContainer{
+	margin: 1em;
+}
+
 .page {
-	border: 1px solid #744C02
+	border: 1px solid #744C02;
 	background-color: rgba(190, 125, 10, 0.42);
 }
-.page > a.pageName {
+.page .page {
+	border-right: none;
+}
+
+a.pageName {
 	display: block;
 	padding: 1ex;
 	color: #060709;
