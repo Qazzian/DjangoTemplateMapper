@@ -1,11 +1,14 @@
+/*global $, document*/
+
+"use strict";
+
 var TreeView = function(tree){
 	this.tree = tree;
 	this.rootEl = $('#mapContainer');
 	this.domNodes = {};
 	
-	this.helper = $('#mustacheHelper');
 	this.pageTemplate = $('#PageTemplate');
-}
+};
 
 TreeView.prototype = {
 	init: function(){
@@ -20,7 +23,7 @@ TreeView.prototype = {
 			event.preventDefault();
 			$(this).parent().toggleClass('closed');
 		});
-		// TODO finish this
+		
 		$(document).delegate('.addNode', 'click', function(event){
 			event.stopImmediatePropagation();
 			event.preventDefault();
@@ -29,45 +32,107 @@ TreeView.prototype = {
 	},
 
 	showRootNodes: function(){
-		var RootNodes = this.tree.RootNodes;
-		for (var i=0, l=RootNodes.length; i<l; i++) {
-			this.addNode(RootNodes[i], this.rootEl);
+		var i, l, RootNodes = this.tree.RootNodes;
+		for (i=0, l=RootNodes.length; i<l; i++) {
+			this.rootEl.append(this.createDomElmt(RootNodes[i]));
 		}
 	},
 
-	addNode: function(node, parent) {
-		if (!node.domObj) {
-			node.domObj = this.pageTemplate.mustache(node);
+	/**
+	 * Create a new Dom object for the given Node.
+	 * Will save each domObj in a cache for later retrieval.
+	 * Note that if the same node passed, a duplicate dom object will be created.
+	 * This is becaue Included nodes can be in more than one page.
+	 */
+	createDomElmt: function(node) {
+		var newDomElmt;
+
+		if (!this.domNodes[node.page]) {
+			this.domNodes[node.page] = [];
 		}
 
-		parent.append(node.domObj);
+		newDomElmt = this.pageTemplate.mustache(node);
+		this.domNodes[node.page].push(newDomElmt);
+		return newDomElmt;
 	},
 
 	showNode: function(event, data) {
-		console.log("Show node: ", event, this);
 		event.stopImmediatePropagation();
 		event.preventDefault();
 
-		var target = event.target;
-		var content = $(target.parentNode).children('ul');
+		var target = event.target,
+			content = $(target.parentNode).children('ul');
 		content.toggleClass('closed');
 	},
 
+	/**
+	 * Add a sub page
+	 */
 	handleAddNode: function(target, event) {
 		var pageId = target.dataset.pageId,
 			parentNode = $(target.parentNode),
 			node = this.tree.getNode(pageId),
-			domObj = this.pageTemplate.mustache(node);
+			domObj = this.createDomElmt(node);
 
 		parentNode.replaceWith(domObj);
 	},
 
-	onPageClick: function() {
+	/**
+	 * Open the given node and all it's parents so that we can see the full branch.
+	 * @assumptions - Root nodes are alway available to the page.
+	 * 
+	 */
+	showNodesTo: function(pageId){
+		// TODO finish me
+		if (!this.tree.hasNode(pageId)) {
+			console.warn("Could not find node " + pageId);
+			return;
+		}
 
-	},
+		var i, l, branch = [this.tree.getNode(pageId)],
+			newDom;
+		
+		while (branch[0].parent) {
+			branch.unshift(branch[0].parent);
+		}
 
-	onSectionClick: function() {
+		for (i=0,l=branch.length; i<l; i++) {
+			if (this.domNodes[branch[i].page]) {
+				this.open(branch[i].page);
+			}
+			else {
+				newDom = this.createDomElmt(branch[i]);
+				// TODO
+			}
+		}
+
+
 
 	}
 
+	open: function(pageId){
+		console.log('TODO: ');
+	}
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

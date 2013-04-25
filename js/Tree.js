@@ -13,6 +13,10 @@ Tree.prototype = {
 		this.parseData(window.map);
 	},
 
+	hasNode: function(pageId){
+		return !!this.AllNodes[pageId];
+	},
+
 	addNode: function(nodeId, data) {
 		data = data || {page: nodeId};
 		data.page = data.page || nodeId;

@@ -7,8 +7,17 @@ li > ul {
 	margin-left: 2em;
 }
 
+#indexContainer {
+}
+
+#indexContainer ul {
+	margin: 0;
+	float: left;
+}
+
 #mapContainer{
 	margin: 1em;
+	float: left;
 }
 
 .page {

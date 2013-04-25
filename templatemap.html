@@ -17,19 +17,23 @@
 	<script type="text/javascript" src="js/Node.js"></script>
 	<script type="text/javascript" src="js/Tree.js"></script>
 	<script type="text/javascript" src="js/TreeView.js"></script>
+	<script type="text/javascript" src="js/IndexView.js"></script>
 	<script type="text/javascript">
 		/*global _, $, window, console*/
 
 		//"use strict";
 
 		/* Some Global Vars */
-		var tree, treeView;
+		var tree, treeView, indexView;
 		
 		function init(){
 			tree = new Tree();
 			treeView = new TreeView(tree);
+			indexView = new IndexView(tree)
+
 
 			tree.init();
+			indexView.init();
 			treeView.init();
 		}
 
@@ -45,12 +49,24 @@
 
 	<h1>Django Template map</h1>
 
+	<div id="indexContainer"  class="">
+		<h3 class="indexTitle">Index</h3>
+		<ul>
+		</ul>
+	</div>
+
 	<ul id="mapContainer">
 	</ul>
 
+	<div id="indexTemplate" class="template">
+		<li class="pageIndex">
+			<a class="indexLink" href="#" data-page-id="{{page}}">{{page}}</a>
+		</li>
+	</div>
+
 	<div id="PageTemplate" class="template">
 		<li class="page">
-			<a class="pageName showNHide" href="#">{{page}}</a>
+			<a id="{{page}}" class="pageName showNHide" href="#">{{page}}</a>
 			<ul class="pageContents">
 				<!-- Child Nodes -->
 				{{#children.length}}
@@ -58,7 +74,7 @@
 					<a class="showNHide" href="#">children</a>
 					<ul>
 						{{#children}}
-						<li class="page"><a class="addNode pageName" href="#" data-page-id="{{page}}">{{page}}</a></li>
+						<li class="page"><a id="{{page}}" class="addNode pageName" href="#">{{page}}</a></li>
 						{{/children}}
 					</ul>
 				</li>

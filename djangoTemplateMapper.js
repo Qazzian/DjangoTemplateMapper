@@ -40,8 +40,8 @@ function processLine(line){
 
 	endPos = line.indexOf(':');
 	filename = line.slice(startpos, endPos);
-	filename = filename.replace(/^.\//, '');
-
+	filename = normalisePath(filename);
+	
 	if (!filename) { return };
 	if (!nodeList[filename]) {
 		node = nodeList[filename] = new Node(filename);
@@ -63,12 +63,12 @@ function processLine(line){
 
 	switch (djangoStatement) {
 		case 'extends':
-			statementVar = statementVar.replace(/['"]/g, '');
+			statementVar = normalisePath(statementVar);
 			
 			node.parent = statementVar;
 			break;
 		case 'include':
-			statementVar = statementVar.replace(/['"]/g, '');
+			statementVar = normalisePath(statementVar);
 			node.includes.push(statementVar);
 			break;
 		case 'block':
@@ -81,6 +81,12 @@ function processLine(line){
 
 
 	// console.log('filename:', filename, ', statment:', djangoStatement, ', var: ', statementVar);
+}
+
+function normalisePath(path){
+	path = path.replace(/['"]/g, '');
+	path = path.replace(/^\.?\/*/g, '');
+	return path;
 }
 
 function printJson(){
